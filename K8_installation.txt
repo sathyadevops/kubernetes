@@ -1,0 +1,116 @@
+ 
+                                    Kubernetes Installation
+                                    =======================
+
+    Google --> Kubeadm install                  
+
+  Step-1 : create Three Nodes 
+ -----------------------------------------
+                 1 - K8 Master  
+                 2 - K8 Nodes
+
+ Step-2: Update Host file :
+ ------------------------------------
+                     # hostname -i
+                     # hostname -f
+
+                     #vi /etc/hosts
+
+  10.128.0.12   k8-mstr.us-central1-a.c.alpine-figure-302100.internal
+  10.128.0.15   k8-nod1.us-central1-a.c.alpine-figure-302100.internal
+  10.128.0.14   k8-nod2.us-central1-a.c.alpine-figure-302100.internal
+
+
+ Step-3: install Docker :  (for Three Nodes)
+ -----------------------------------------------------------
+     apt-get update && apt-get install -y \
+  apt-transport-https ca-certificates curl software-properties-common gnupg2
+
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+
+   add-apt-repository \
+  "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) \
+  stable"
+   
+    apt-get update && apt-get install -y \
+  containerd.io=1.2.13-1 \
+  docker-ce=5:19.03.8~3-0~ubuntu-$(lsb_release -cs) \
+  docker-ce-cli=5:19.03.8~3-0~ubuntu-$(lsb_release -cs)
+
+   cat > /etc/docker/daemon.json <<EOF
+{
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m"
+  },
+  "storage-driver": "overlay2"
+}
+EOF
+
+mkdir -p /etc/systemd/system/docker.service.d
+ systemctl daemon-reload
+
+systemctl restart docker
+
+ Step-4: install kubeadm, kubelet and kubectl:  (for Three Nodes)
+ --------------------------------------------------------------------------------------------
+
+  sudo apt-get update && sudo apt-get install -y apt-transport-https curl
+
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+
+cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
+deb https://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+
+sudo apt-get update
+
+sudo apt-get install -y kubelet kubeadm kubectl
+
+
+ Step-5: Installing Kubernetes Cluster Initialization :
+ -------------------------------------------------------------------------
+   # kubeadm init
+
+    mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+
+
+kubeadm join 10.128.0.12:6443 --token twu1l1.e9zabf1oxk359a9q \
+    --discovery-token-ca-cert-hash 
+
+sha256:a29c0d2889062c3926371ddd86bbbb7f9f669acc19641f7a274346a08a29bb05
+
+
+ kubectl get nodes
+
+Step-6: Installing a Pod network add-on :
+----------------------------------------------------------
+   kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | 
+
+base64 | tr -d '\n')"
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
