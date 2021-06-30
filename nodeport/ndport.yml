@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:  
+  name: my-nodeport-service
+spec:
+  selector:    
+    app: dev-pod
+  type: NodePort
+  ports:  
+  - name: my-nodeport
+    port: 9090
+    targetPort: dev-port
+    nodePort: 30036
+    protocol: TCP
